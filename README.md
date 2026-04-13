@@ -127,3 +127,4 @@ Outputs:
 1. BARN Challenge — https://people.cs.gmu.edu/~xiao/Research/BARN_Challenge/
 2. GitHub — https://github.com/Daffan/the-barn-challenge
 3. Fox, Burgard, Thrun. *The Dynamic Window Approach to Collision Avoidance.* IEEE RA, 1997.
+# Automation_navigation_in_cluttered_environment
