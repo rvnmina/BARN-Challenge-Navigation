@@ -1,0 +1,147 @@
+# Singularityfile.def
+# BARN Challenge 2026 -- Team 10, IIT Kharagpur
+#
+# Build (from /tmp/work, where your code lives):
+#   apptainer build /tmp/barn_team10.sif Singularityfile.def
+#
+# Run any script inside the container:
+#   apptainer exec /tmp/barn_team10.sif bash -c \
+#     "export PYTHONPATH=$PWD:\$PYTHONPATH && \
+#      source /opt/ros/noetic/setup.bash && \
+#      python3 simulate.py --world_idx 0"
+#
+# Quick sanity test:
+#   apptainer test /tmp/barn_team10.sif
+
+Bootstrap: docker
+From: ros:noetic-ros-base-focal
+
+%labels
+    Team        "Team 10 -- IIT Kharagpur"
+    Course      "AI61006: AI for Cyber Physical Systems"
+    Contact     "25AI60R12@iitkgp.ac.in"
+
+%files
+    # Copy your entire project folder into the container
+    . /opt/barn_nav
+
+# ------------------------------------------------------------------ #
+#  Build-time setup                                                    #
+# ------------------------------------------------------------------ #
+%post
+    export DEBIAN_FRONTEND=noninteractive
+
+    apt-get update -q && apt-get install -y --no-install-recommends \
+        python3-pip \
+        python3-numpy \
+        ros-noetic-navigation \
+        ros-noetic-tf \
+        ros-noetic-tf2-ros \
+        ros-noetic-sensor-msgs \
+        ros-noetic-geometry-msgs \
+        ros-noetic-nav-msgs \
+        ros-noetic-std-msgs \
+        ros-noetic-roscpp \
+        ros-noetic-rospy \
+        ffmpeg \
+        git \
+        && rm -rf /var/lib/apt/lists/*
+
+    python3 -m pip install --upgrade pip
+
+    # Pin numpy for ROS Noetic compatibility; add pillow for GIF output
+    pip3 install --no-cache-dir \
+        numpy==1.23.5 \
+        scipy \
+        scikit-learn \
+        "matplotlib==3.5.3" \
+        tqdm \
+        pillow
+
+    # Clone the official BARN challenge repo so worlds are available
+    # inside the container at the default path simulate.py/evaluate.py expect.
+    git clone --depth 1 \
+        https://github.com/Daffan/the-barn-challenge.git \
+        /tmp/work/the-barn-challenge
+
+    chmod +x /opt/barn_nav/navigator.py
+
+    # Make ROS available in every bash session
+    echo "source /opt/ros/noetic/setup.bash" >> /etc/bash.bashrc
+
+# ------------------------------------------------------------------ #
+#  Runtime environment                                                 #
+# ------------------------------------------------------------------ #
+%environment
+    export LANG=C.UTF-8
+    export LC_ALL=C.UTF-8
+
+    # ROS network settings – overridden by the BARN evaluator on the
+    # evaluation machine. Defaults below work for local testing with
+    # roscore on the same host.
+    export ROS_MASTER_URI=http://localhost:11311
+    export ROS_IP=127.0.0.1
+
+    # Always source ROS and expose our package to Python
+    source /opt/ros/noetic/setup.bash
+    export PYTHONPATH=/opt/barn_nav:$PYTHONPATH
+
+# ------------------------------------------------------------------ #
+#  Container entry point (used by the BARN evaluator)                 #
+# ------------------------------------------------------------------ #
+%runscript
+    #!/bin/bash
+    source /opt/ros/noetic/setup.bash
+    export PYTHONPATH=/opt/barn_nav:$PYTHONPATH
+
+    echo "[BARN] Starting Team 10 navigator ..."
+    exec python3 /opt/barn_nav/navigator.py "$@"
+
+# ------------------------------------------------------------------ #
+#  Sanity test  --  apptainer test /tmp/barn_team10.sif               #
+# ------------------------------------------------------------------ #
+%test
+    source /opt/ros/noetic/setup.bash
+    export PYTHONPATH=/opt/barn_nav:$PYTHONPATH
+
+    python3 -c "
+import sys, os
+sys.path.insert(0, '/opt/barn_nav')
+
+# --- core navigation stack ---
+from navigator import SimNavigator, AStarPlanner
+from dwa import RobotState, DWAConfig
+import numpy as np
+
+obstacles = np.array([[0.5, 0.5], [-0.5, -0.5], [1.0, -1.0]])
+start     = RobotState(x=-3.0, y=0.0, yaw=0.0)
+goal      = (3.0, 0.0)
+
+sim    = SimNavigator()
+result = sim.navigate(start, goal, obstacles, max_steps=400)
+print('[Test] navigate() result:', result)
+assert result is not None, 'navigate() returned None'
+assert 'success' in result,  'result missing success key'
+print('[Test] Core navigation stack: PASSED')
+
+# --- BARN world loading ---
+barn_repo = '/tmp/work/the-barn-challenge'
+assert os.path.isdir(barn_repo), f'BARN repo not found at {barn_repo}'
+worlds_dir = os.path.join(barn_repo, 'jackal_helper', 'worlds', 'BARN', 'path_files')
+assert os.path.isdir(worlds_dir), f'path_files dir missing: {worlds_dir}'
+path_files = [f for f in os.listdir(worlds_dir) if f.endswith('.npy')]
+assert len(path_files) > 0, 'No .npy path files found'
+print(f'[Test] BARN repo: {len(path_files)} path files found: PASSED')
+
+# --- tuned config loading (no file present -- should fall back gracefully) ---
+from simulate import load_tuned_config
+cfg = load_tuned_config(config_path='/nonexistent/path.json')
+assert isinstance(cfg, DWAConfig), 'load_tuned_config did not return DWAConfig'
+print('[Test] load_tuned_config fallback: PASSED')
+
+# --- pillow / GIF support ---
+import PIL
+print(f'[Test] Pillow {PIL.__version__}: PASSED')
+
+print('[Test] ALL CHECKS PASSED')
+"

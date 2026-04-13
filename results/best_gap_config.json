@@ -1,0 +1,13 @@
+{
+  "gap_threshold": 1.5077346497144002,
+  "min_gap_width": 5,
+  "safety_bubble": 0.3377123914954437,
+  "max_linear_speed": 0.7277591532079702,
+  "min_linear_speed": 0.15,
+  "max_angular_speed": 1.2,
+  "speed_lookahead": 1.5,
+  "speed_floor": 0.2,
+  "goal_blend": 0.6168181584840599,
+  "k_angular": 2.0833342947462663,
+  "rotate_threshold": 0.7
+}

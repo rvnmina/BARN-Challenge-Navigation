@@ -1,0 +1,13 @@
+{
+  "barn_score": 0.12913962593031736,
+  "success_rate": 0.6,
+  "collision_rate": 0.4,
+  "timeout_rate": 0.0,
+  "avg_collisions": 0.4,
+  "avg_time_steps": 258.6666666666667,
+  "avg_time_sec": 25.86666666666667,
+  "avg_final_dist": 2.4237575207614723,
+  "path_efficiency": 0.21523270988386226,
+  "avg_ot_sec": 5.688958640263143,
+  "n_envs": 5
+}

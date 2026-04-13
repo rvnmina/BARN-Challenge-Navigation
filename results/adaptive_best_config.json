@@ -1,0 +1,18 @@
+{
+  "max_speed": 0.793522792717659,
+  "min_speed": -0.1,
+  "max_yaw_rate": 1.2,
+  "max_accel": 0.6358623912453621,
+  "max_delta_yaw_rate": 1.5,
+  "v_resolution": 0.02,
+  "yaw_rate_resolution": 0.05,
+  "dt": 0.1,
+  "predict_time": 3.254070183457083,
+  "to_goal_cost_gain": 0.13490719318483435,
+  "speed_cost_gain": 1.2273977293244704,
+  "obstacle_cost_gain": 2.903783881425082,
+  "robot_radius": 0.25,
+  "obstacle_clearance": 0.05,
+  "stuck_vel_threshold": 0.05,
+  "stuck_time_limit": 3.0
+}
