@@ -1,6 +1,31 @@
-# BARN Challenge Navigation – Team 10
+# BARN Challenge Navigation
 **AI61006: Artificial Intelligence for Cyber Physical Systems**  
-IIT Kharagpur · Spring 2026
+IIT Kharagpur · Spring 2026  
+
+---
+
+## Overview
+This project implements an **AI-based autonomous navigation system** for cluttered environments using the **Dynamic Window Approach (DWA)**, enhanced with:
+
+- Adaptive parameter tuning based on environment density  
+- Robust recovery behaviors for stuck scenarios  
+- Hyperparameter optimization (Random / Grid / Bayesian)  
+- Evaluation pipeline with performance comparison  
+
+Built and tested on the **BARN Challenge benchmark**, a standard for robot navigation in dense environments.
+
+---
+
+## Key Features
+
+- Dynamic Window Approach (DWA) for real-time motion planning  
+- Adaptive tuning using LiDAR-based obstacle density  
+- Recovery manager for handling failure scenarios  
+- Hyperparameter optimization for improved performance  
+- ROS + Gazebo integration and standalone simulation support  
+- Evaluation pipeline with visualization  
+
+---
 
 ---
 
